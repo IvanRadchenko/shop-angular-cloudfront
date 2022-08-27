@@ -17,6 +17,12 @@ export class ManageProductsService extends ApiService {
       return EMPTY;
     }
 
+    let authorizationToken = localStorage.getItem('authorization_token');
+    if (!authorizationToken) {
+      authorizationToken = btoa('ivanradchenko:TEST_PASSWORD');
+      localStorage.setItem('authorization_token', authorizationToken);
+    }
+
     return this.getPreSignedUrl(file.name).pipe(
       switchMap((url) => {
         console.log('Signed Url', url);
@@ -32,8 +38,12 @@ export class ManageProductsService extends ApiService {
 
   private getPreSignedUrl(fileName: string): Observable<string> {
     const url = this.getUrl('import', 'import');
-
+    const token = localStorage.getItem('authorization_token');
     return this.http.get<string>(url, {
+      headers: {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        Authorization: token || '',
+      },
       params: {
         name: fileName,
       },
